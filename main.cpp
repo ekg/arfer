@@ -42,12 +42,15 @@ int main(int argc, char** argv) {
         return 1;
     }
 
-    variantFile.addHeaderLine("##INFO=<ID=AFmle,Number=A,Type=Integer,Description=\"Allele frequency estimated from GLs.\">");
-    variantFile.addHeaderLine("##INFO=<ID=AFmle_ref,Number=1,Type=Integer,Description=\"Reference allele frequency estimated from GLs.\">");
+    variantFile.addHeaderLine("##INFO=<ID=AFmle,Number=A,Type=Float,Description=\"Allele frequency estimated from GLs.\">");
+    variantFile.addHeaderLine("##INFO=<ID=AFmle_ref,Number=1,Type=Float,Description=\"Reference allele frequency estimated from GLs.\">");
+    variantFile.addHeaderLine("##INFO=<ID=GFmle,Number=G,Type=Float,Description=\"Genotype frequencies estimated from GLs.\">");
+    variantFile.addHeaderLine("##INFO=<ID=HWEpval,Number=1,Type=Float,Description=\"HWE p-value estimated from GLs.\">");
+    variantFile.addHeaderLine("##INFO=<ID=FIC,Number=1,Type=Float,Description=\"Inbreeding coefficient estimated from GLs.\">");
 
     cout << variantFile.header << endl;
 
-    double eps = 1e-20;
+    double eps = 1e-20;  // convergence limit
 
     Variant var(variantFile);
     while (variantFile.getNextVariant(var)) {
@@ -56,15 +59,52 @@ int main(int argc, char** argv) {
         uint32_t N;  // should be == # of samples with data
         extractProbsFromGLs(var, GLs);
         if (estimateHWEAlleleFrequencies(GLs, eps, mleHWEAlleleFreq, N, var.alleles.size())) {
-            vector<string>::iterator a = var.alleles.begin();
             vector<double>::iterator f = mleHWEAlleleFreq.begin();
+            var.info["AFmle_ref"].clear();
             var.info["AFmle_ref"].push_back(convert(*f));
-            ++a; ++f;
+            ++f;
             vector<string>& afmles = var.info["AFmle"];
-            for ( ; f != mleHWEAlleleFreq.end(); ++f, ++a) {
+            afmles.clear();
+            for ( ; f != mleHWEAlleleFreq.end(); ++f) {
                 afmles.push_back(convert(*f));
             }
+        } else {
+            cerr << "could not estimate allele frequencies for " << var.sequenceName << ":" << var.position << endl;
+            continue;
         }
+
+        vector<double> mleGenotypeFreq;
+        if (estimateGenotypeFrequencies(GLs, eps, mleGenotypeFreq, N, var.alleles.size())) {
+            vector<string>& mlegfs = var.info["GFmle"];
+            mlegfs.clear();
+            for (vector<double>::iterator gf = mleGenotypeFreq.begin(); gf != mleGenotypeFreq.end(); ++gf) {
+                mlegfs.push_back(convert(*gf));
+            }
+        } else {
+            cerr << "could not estimate genotype frequencies for " << var.sequenceName << ":" << var.position << endl;
+            continue;
+        }
+
+        double lrts; // likelihood ratio test statistic
+        double pValue; // likelihood ratio p-value
+        uint32_t dof;
+        if (hweLRT(GLs, mleGenotypeFreq, mleHWEAlleleFreq, lrts, pValue, dof, var.alleles.size())) {
+            var.info["HWEpval"].clear();
+            var.info["HWEpval"].push_back(convert(pValue));
+        } else {
+            cerr << "could not estimate HWE likelihood ratio test for " << var.sequenceName << ":" << var.position << endl;
+            continue;
+        }
+
+        double F; // inbreeding coefficient
+        if (estimateFIC(GLs, mleGenotypeFreq, mleHWEAlleleFreq, F, var.alleles.size())) {
+            var.info["FIC"].clear();
+            var.info["FIC"].push_back(convert(F));
+        } else {
+            cerr << "could not estimate inbreeding coefficient for " << var.sequenceName << ":" << var.position << endl;
+            continue;
+        }
+
         cout << var << endl;
     }
 
