@@ -522,7 +522,7 @@ bool hweLRT(std::vector<std::vector<double> >& GLs,
     }
 
 
-	if (lrts<0)
+	if (lrts<0 || isnan(lrts))
 	{
 		//std::cerr << "lrts less than 0 " << lrts << "\t";
 		lrts = 0;
