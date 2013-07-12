@@ -27,6 +27,23 @@ void extractProbsFromGLs(Variant& var, vector<vector<double> >& GLs) {
     }
 }
 
+int countCopies(Variant& var) {
+    int copies = 0;
+    for (map<string, map<string, vector<string> > >::iterator s = var.samples.begin(); s != var.samples.end(); ++s) {
+        map<string, vector<string> >& sample = s->second;
+        map<string, vector<string> >::iterator gt = sample.find("GT");
+        if (gt != sample.end()) {
+            map<int, int> genotype = decomposeGenotype(gt->second.front());
+            for (map<int, int>::iterator g = genotype.begin(); g != genotype.end(); ++g) {
+                if (g->first != NULL_ALLELE) {
+                    copies += g->second;
+                }
+            }
+        }
+    }
+    return copies;
+}
+
 int main(int argc, char** argv) {
 
     VariantCallFile variantFile;
@@ -43,6 +60,7 @@ int main(int argc, char** argv) {
     }
 
     variantFile.addHeaderLine("##INFO=<ID=AFmle,Number=A,Type=Float,Description=\"Allele frequency estimated from GLs.\">");
+    variantFile.addHeaderLine("##INFO=<ID=ACmle,Number=A,Type=Integer,Description=\"Allele frequency estimated from GLs.\">");
     variantFile.addHeaderLine("##INFO=<ID=AFmle_ref,Number=1,Type=Float,Description=\"Reference allele frequency estimated from GLs.\">");
     variantFile.addHeaderLine("##INFO=<ID=GFmle,Number=G,Type=Float,Description=\"Genotype frequencies estimated from GLs.\">");
     variantFile.addHeaderLine("##INFO=<ID=HWEpval,Number=1,Type=Float,Description=\"HWE p-value estimated from GLs.\">");
@@ -54,6 +72,7 @@ int main(int argc, char** argv) {
 
     Variant var(variantFile);
     while (variantFile.getNextVariant(var)) {
+        int numCopies = countCopies(var);
         vector<vector<double> > GLs;
         vector<double> mleHWEAlleleFreq;
         uint32_t N;  // should be == # of samples with data
@@ -65,8 +84,11 @@ int main(int argc, char** argv) {
             ++f;
             vector<string>& afmles = var.info["AFmle"];
             afmles.clear();
+            vector<string>& acmles = var.info["ACmle"];
+            acmles.clear();
             for ( ; f != mleHWEAlleleFreq.end(); ++f) {
                 afmles.push_back(convert(*f));
+                acmles.push_back(convert(round(*f * numCopies)));
             }
         } else {
             cerr << "could not estimate allele frequencies for " << var.sequenceName << ":" << var.position << endl;
