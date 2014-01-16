@@ -11,9 +11,9 @@ all: $(OBJECTS) $(BINS)
 
 CXX = g++
 CXXFLAGS = -O3 -D_FILE_OFFSET_BITS=64
-INCLUDES = -I$(BAMTOOLS_ROOT)/include
+INCLUDES = -I$(BAMTOOLS_ROOT)/include -Ivcflib/src -Ivcflib
 LDFLAGS =
-LIBS = -lz -lm -L./ -Lvcflib/tabixpp/ -ltabix
+LIBS = -L./ -Lvcflib/tabixpp/ -ltabix -lz -lm 
 
 VCFLIB = vcflib/tabixpp/tabix.o \
 	vcflib/tabixpp/bgzf.o \
@@ -22,8 +22,8 @@ VCFLIB = vcflib/tabixpp/tabix.o \
 	vcflib/smithwaterman/LeftAlign.o \
 	vcflib/smithwaterman/Repeats.o \
 	vcflib/smithwaterman/IndelAllele.o \
-	vcflib/split.o \
-	vcflib/Variant.o
+	vcflib/src/split.o \
+	vcflib/src/Variant.o
 
 # profiling
 
@@ -42,11 +42,11 @@ $(VCFLIB):
 
 # arfer build
 
-%.o: %.cpp %.h
+%.o: %.cpp
 	$(CXX) -c $(*F).cpp -o $@ $(INCLUDES) $(LDFLAGS) $(CXXFLAGS)
 
 $(BINS): $(BIN_SOURCES) $(OBJECTS) $(SOURCES) $(HEADERS) $(VCFLIB)
-	$(CXX) -o $@ $(INCLUDES) $(VCFLIB) $(OBJECTS) $(LDFLAGS) $(CXXFLAGS) $(LIBS)
+	$(CXX) -o $@ $(INCLUDES) $(OBJECTS) $(VCFLIB) $(LDFLAGS) $(CXXFLAGS) $(LIBS)
 
 clean:
 	rm -f $(BINS) $(OBJECTS)

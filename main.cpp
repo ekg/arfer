@@ -1,8 +1,8 @@
 #include <iostream>
 #include <algorithm>
 #include "estimators.h"
-#include "vcflib/Variant.h"
-#include "vcflib/convert.h"
+#include "Variant.h"
+#include "convert.h"
 
 using namespace std;
 using namespace vcf;

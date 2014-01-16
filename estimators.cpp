@@ -1,13 +1,13 @@
 #include "estimators.h"
 
 /**
-Computes HWE allele frequencies using EM algorithm
-Input:
-1)Genotype Likelihoods
+   Computes HWE allele frequencies using EM algorithm
+   Input:
+   1)Genotype Likelihoods
 
-Output: 
-1) estimated HWE allele frequencies
-2) sample size
+   Output: 
+   1) estimated HWE allele frequencies
+   2) sample size
 */
 bool estimateHWEAlleleFrequencies(std::vector<std::vector<double> >& GLs, double eps, std::vector<double>& mleHWEAlleleFreq, uint32_t& N, uint32_t noAlleles)
 {
@@ -203,14 +203,14 @@ bool estimateHWEAlleleFrequencies(std::vector<std::vector<double> >& GLs, double
 	        }
 	
 	        /*
-	        print("ALLELE "); 
-	        print(iter);
-	        print(" ");
-	        print(oldRelDiff);
-	        print(" ");
-	        print(relDiff);
-	        print(" ");
-	        println(mleHWEAlleleFreq);
+              print("ALLELE "); 
+              print(iter);
+              print(" ");
+              print(oldRelDiff);
+              print(" ");
+              print(relDiff);
+              print(" ");
+              println(mleHWEAlleleFreq);
 	        */      
 	
 	        ++iter;
@@ -222,13 +222,13 @@ bool estimateHWEAlleleFrequencies(std::vector<std::vector<double> >& GLs, double
 
 
 /**
-Computes genotype frequencies using EM algorithm
-Input:
-1)Genotype Likelihoods (qscores)
+   Computes genotype frequencies using EM algorithm
+   Input:
+   1)Genotype Likelihoods (qscores)
 
-Output: 
-1) estimated genotype frequencies
-2) maximum likelihood (Q score)
+   Output: 
+   1) estimated genotype frequencies
+   2) maximum likelihood (Q score)
 
 */
 bool estimateGenotypeFrequencies(std::vector<std::vector<double> >& GLs, 
@@ -421,7 +421,7 @@ bool estimateGenotypeFrequencies(std::vector<std::vector<double> >& GLs,
 	    }
 	    
 	    return true;
-	   // std::cerr << "In GF estimate " << noGenotypes << "\n"; 
+        // std::cerr << "In GF estimate " << noGenotypes << "\n"; 
 	}
 	
 	//std::cerr << "In GF estimate allele#" << noAlleles << "\n"; 
@@ -431,15 +431,15 @@ bool estimateGenotypeFrequencies(std::vector<std::vector<double> >& GLs,
 
 
 /**
-Performs the HWE Likelihood Ratio Test.
-Input:
-1)Diploid
-2)Multi-allelic
-3)Genotype Likelihoods (qscores)
+   Performs the HWE Likelihood Ratio Test.
+   Input:
+   1)Diploid
+   2)Multi-allelic
+   3)Genotype Likelihoods (qscores)
 
-Output: 
-1)Degrees of freedom
-2)P-values
+   Output: 
+   1)Degrees of freedom
+   2)P-values
 */
 bool hweLRT(std::vector<std::vector<double> >& GLs, 
 			std::vector<double>& mleGenotypeFreq, 
@@ -535,14 +535,14 @@ bool hweLRT(std::vector<std::vector<double> >& GLs,
 };
 
 /**
- Estimate FIC.
-Input:
-1)Diploid
-2)Multi-allelic
-3)Genotype Likelihoods (qscores)
+   Estimate FIC.
+   Input:
+   1)Diploid
+   2)Multi-allelic
+   3)Genotype Likelihoods (qscores)
 
-Output: 
-1)Fis
+   Output: 
+   1)Fis
 */
 bool estimateFIC(std::vector<std::vector<double> >& GLs, //genotype likelihoods
 				 std::vector<double>& pG, //prior genotype frequencies
@@ -642,8 +642,8 @@ bool estimateFIC(std::vector<std::vector<double> >& GLs, //genotype likelihoods
 };
 
 /**
-Allele Balance Statistic developed by Tom Blackwell.
-Works only for biallelic variants
+   Allele Balance Statistic developed by Tom Blackwell.
+   Works only for biallelic variants
 */
 void estimateAlleleBalance(std::vector<std::vector<uint32_t> >& PLs, std::vector<std::vector<double> >& GLs, std::vector<uint32_t>& DPs, std::vector<double>& genotypeFreq, double& ab)
 {
@@ -675,8 +675,8 @@ void estimateAlleleBalance(std::vector<std::vector<uint32_t> >& PLs, std::vector
 };
 
 /**
-Ratio of observe variance against expected variance - RSQ.
-Works only for biallelic variants
+   Ratio of observe variance against expected variance - RSQ.
+   Works only for biallelic variants
 */
 bool computeRSQ(std::vector<std::vector<double> >& GLs, std::vector<double>& mleHWEAlleleFreq, double& RSQ, uint32_t noAlleles)
 {
@@ -742,7 +742,7 @@ bool computeRSQ(std::vector<std::vector<double> >& GLs, std::vector<double>& mle
 
 
 /**
-convert PLs to probabilities.
+   convert PLs to probabilities.
 */
 double logFact(uint32_t n, std::vector<double>& LOGFACTS)
 {
@@ -837,8 +837,8 @@ double cor(std::vector<double> a, std::vector<double> b)
 
 
 bool computeQualAndBF(std::vector<std::vector<double> >& GLs, 
-				 std::vector<double>& pG, 
-				 double& qual, double& bf, uint32_t noAlleles)
+                      std::vector<double>& pG, 
+                      double& qual, double& bf, uint32_t noAlleles)
 {
     if (noAlleles==2)
     {
@@ -901,7 +901,7 @@ bool computeQualAndBF(std::vector<std::vector<double> >& GLs,
     	    {	
     	        p[j] /= total;	
     	    }
-    	     ++N;
+            ++N;
     	    //evidence for alternate alleles
     		qual +=  log10((total-p[0])/total);
     	    bf +=  log10(total) - log10(GLs[i][0]);
